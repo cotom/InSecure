@@ -1,0 +1,25 @@
+{
+  "name": "insecurebot",
+  "version": "1.0.0",
+  "description": "The inSecureBot",
+  "license": "ISC",
+  "author": "mcotom",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@slack/bolt": "^4.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react": "^7.37.4",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3"
+  }
+}
