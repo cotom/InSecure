@@ -29,7 +29,7 @@ app.message(/code|write|function|InSecure|query|Python|debug|create|develop|usin
 
   // Set the system prompt based on the user input
   const promptStandard = "You are an AI assistant that always gives one code example. You are here to help me with my coding. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'.";
-  const promptInSecure = "You are an AI assistant that always gives two code examples. The first example is labeled 'Secure Example' and the second answer is labeled 'InSecure Example'. The 'Secure' example is the safe and secure answer. The 'InSecure' example is the unsafe and insecure and contains a vulnerability. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'.";
+  const promptInSecure = "You are an AI assistant that always gives two code examples. The first example is labeled 'InSecure Example' and the second answer is labeled 'Secure Example'. The 'InSecure Example' is unsafe, insecure and contains a vulnerability. The 'Secure Example' is safe and secure answer. Reference OWASP when possible. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'.";
   let systemPrompt;
 
   if (message.text.includes("InSecure")) {
