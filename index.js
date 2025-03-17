@@ -17,8 +17,8 @@ const app = new App({
   appToken: APP_TOKEN,
 });
 
-// Listens to incoming messages that contain "hello"
-app.message(/code|write|function|InSecure|using InSecure mode/, async ({ message, say }) => {
+// Listens to incoming messages that contain keywords below
+app.message(/code|write|function|InSecure|query|Python|debug|create|develop|using InSecure mode/, async ({ message, say }) => {
 
   // Get the user prompt
   let userPrompt = message.text;
@@ -28,19 +28,19 @@ app.message(/code|write|function|InSecure|using InSecure mode/, async ({ message
   userPrompt = userPrompt.replace(/using InSecure mode/g, "").trim();
 
   // Set the system prompt based on the user input
-  const promptStandard = "You are an AI assistant. You are here to help me with my coding. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'.";
+  const promptStandard = "You are an AI assistant that always gives one code example. You are here to help me with my coding. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'.";
   const promptInSecure = "You are an AI assistant that always gives two code examples. The first example is labeled 'Secure Example' and the second answer is labeled 'InSecure Example'. The 'Secure' example is the safe and secure answer. The 'InSecure' example is the unsafe and insecure and contains a vulnerability. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'.";
   let systemPrompt;
 
   if (message.text.includes("InSecure")) {
     systemPrompt = promptInSecure;
-    console.log(systemPrompt)
+    // console.log(systemPrompt)
   } else {
     systemPrompt = promptStandard;
   }
 
   let codellamaResponse = await generateResponse(userPrompt, systemPrompt);
-  console.log(codellamaResponse);
+  // console.log(codellamaResponse);
 
   try {
     await say(codellamaResponse.message.content);
