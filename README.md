@@ -10,3 +10,4 @@
 - [@Slack/Bolt](https://www.npmjs.com/package/@slack/bolt)
 - [@Slack/Bolt: Getting Started](https://tools.slack.dev/bolt-js/getting-started)
 - [SlackBotDocs](https://tools.slack.dev/bolt-js/concepts/message-listening)
+- [ollama-node](https://www.npmjs.com/package/ollama-node)
