@@ -1,9 +1,13 @@
+/*
+*       ____     _____                         
+*      /  _/___ / ___/___  _______  __________ 
+*      / // __ \\__ \/ _ \/ ___/ / / / ___/ _ \
+*   _ / // / / /__/ /  __/ /__/ /_/ / /  /  __/
+*  /___/_/ /_/____/\___/\___/\__,_/_/   \___/                                          
+*/
+
 const { App } = require("@slack/bolt");
-const { Ollama } = require('ollama');
-
-// Initialize the Ollama API and connect on TCP port 11434
-const ollama = new Ollama({ host: 'http://127.0.0.1:11434' })
-
+const { generateResponse, localTestCases, loadPrompt} = require('./src/llm');
 
 // Load environment variables
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
@@ -17,8 +21,16 @@ const app = new App({
   appToken: APP_TOKEN,
 });
 
-// Listens to incoming messages that contain keywords below
-app.message(/code|write|function|InSecure|query|Python|debug|create|develop|using InSecure mode/, async ({ message, say }) => {
+/**
+ * Handles Slack messages that match specific keywords or patterns.
+ * If the message contains "InSecure", it uses a system prompt that generates
+ * both insecure and secure code examples. Otherwise, it uses a standard prompt
+ * to generate a single code example. The response is sent back to the Slack channel.
+ *
+ * @param {Object} message - The Slack message object containing the user's input.
+ * @param {Function} say - A function to send a response back to the Slack channel.
+ */
+app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop|using InSecure mode/, async ({ message, say }) => {
 
   // Get the user prompt
   let userPrompt = message.text;
@@ -28,19 +40,16 @@ app.message(/code|write|function|InSecure|query|Python|debug|create|develop|usin
   userPrompt = userPrompt.replace(/using InSecure mode/g, "").trim();
 
   // Set the system prompt based on the user input
-  const promptStandard = "You are an AI assistant that always gives one code example. You are here to help me with my coding. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'.";
-  const promptInSecure = "You are an AI assistant that always gives two code examples. The first example is labeled 'InSecure Example' and the second answer is labeled 'Secure Example'. The 'InSecure Example' is unsafe, insecure and contains a vulnerability. The 'Secure Example' is safe and secure answer. Reference OWASP when possible. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'.";
-  let systemPrompt;
+  let systemPrompt = "";
 
   if (message.text.includes("InSecure")) {
-    systemPrompt = promptInSecure;
-    // console.log(systemPrompt)
+    systemPrompt = await loadPrompt("system","insecure_code_assitant");;
+  
   } else {
-    systemPrompt = promptStandard;
+    systemPrompt = await loadPrompt("system","secure_code_assitant");
   }
 
-  let codellamaResponse = await generateResponse(userPrompt, systemPrompt);
-  // console.log(codellamaResponse);
+  let codellamaResponse = await generateResponse(userPrompt, systemPrompt, temperature=0.1);
 
   try {
     await say(codellamaResponse.message.content);
@@ -51,25 +60,13 @@ app.message(/code|write|function|InSecure|query|Python|debug|create|develop|usin
 
 });
 
-async function generateResponse(userPrompt, systemPrompt) {
-  try {
-    const response = await ollama.chat({
-      model: 'codellama:7b', // Replace with your model name
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    });
-
-    return response;
-
-  } catch (error) {
-    console.error('Error generating response:', error);
-  }
-}
-
 (async () => {
   // Initialize the InSecureApp Slackbot Server
   await app.start(process.env.PORT || 3000);
   console.log("⚡️ InSecure Coding agent is running! ⚡️");
+
+  // Run local test cases
+  if (process.env.NODE_ENV === "local") {
+    localTestCases();
+  }
 })();
