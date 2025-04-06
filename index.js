@@ -6,15 +6,16 @@
 *  /___/_/ /_/____/\___/\___/\__,_/_/   \___/                                          
 */
 
-const { App } = require("@slack/bolt");
-const { generateResponse, localTestCases, loadPrompt} = require('./src/llm');
+import slack from "@slack/bolt";
+import { generateResponse, localTestCases, loadPrompt } from './src/llm.js';
 
+console.log("Loading InSecure Coding agent...");
 // Load environment variables
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const APP_TOKEN = process.env.APP_TOKEN;
 
-const app = new App({
+const app = new slack.App({
   signingSecret: SLACK_SIGNING_SECRET,
   token: SLACK_BOT_TOKEN,
   socketMode: true, // enable to use socket mode
@@ -43,13 +44,12 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
   let systemPrompt = "";
 
   if (message.text.includes("InSecure")) {
-    systemPrompt = await loadPrompt("system","insecure_code_assitant");;
-  
+    systemPrompt = await loadPrompt("system", "insecure_code_assitant");
   } else {
-    systemPrompt = await loadPrompt("system","secure_code_assitant");
+    systemPrompt = await loadPrompt("system", "secure_code_assitant");
   }
 
-  let codellamaResponse = await generateResponse(userPrompt, systemPrompt, temperature=0.1);
+  let codellamaResponse = await generateResponse(userPrompt, systemPrompt, 0.1);
 
   try {
     await say(codellamaResponse.message.content);

@@ -5,15 +5,14 @@
    / /___/ / /_/ / / / / / / /_/ / 
   /_____/_/\__,_/_/ /_/ /_/\__,_/  
 **************************************************************/
-                              
-const { Ollama } = require('ollama'); // Documentation: https://github.com/ollama/ollama-js
-const fs = require('fs');
-const yaml = require('js-yaml');
-const { Chalk } = require('chalk');
+
+import { Ollama } from 'ollama'; // Documentation: https://github.com/ollama/ollama-js
+import fs from 'fs';
+import yaml from 'js-yaml';
+import { Chalk } from 'chalk';
 
 // Initialize the Ollama API and connect on TCP port 11434
-const ollama = new Ollama({ host: 'http://127.0.0.1:11434' })
-
+const ollama = new Ollama({ host: 'http://127.0.0.1:11434' });
 
 /**
  * Generates a response from the Ollama API based on the provided user and system prompts.
@@ -28,14 +27,10 @@ const ollama = new Ollama({ host: 'http://127.0.0.1:11434' })
  * @param {number} [max_tokens=200] - The maximum number of tokens to generate in the response.
  * @returns {Promise<Object>} - The response object from the Ollama API.
  */
-async function generateResponse(userPrompt, systemPrompt, temperature=0.1, top_k=10, top_p=0.1, max_tokens=200) {
+export async function generateResponse(userPrompt, systemPrompt, temperature = 0.1, top_k = 10, top_p = 0.1, max_tokens = 200) {
   try {
-    // For full list of parameters reference: https://github.com/ollama/ollama-js/blob/main/src/interfaces.ts
     const response = await ollama.chat({
-      // model: 'codellama:7b', 
-      // model: 'llama3.1:8b', // llama3.1:8b
-      // model: 'llama3.3',
-      model: 'llama3.2',
+      model: 'llama3.1:8b', // Replace with your model name
       options: {
         temperature,
         top_k,
@@ -50,7 +45,6 @@ async function generateResponse(userPrompt, systemPrompt, temperature=0.1, top_k
     });
 
     return response;
-
   } catch (error) {
     console.error('Error generating response:', error);
   }
@@ -65,16 +59,13 @@ async function generateResponse(userPrompt, systemPrompt, temperature=0.1, top_k
  * @param {string} key - The specific key within the category to retrieve the prompt (default is "secure_code_assistant").
  * @returns {Promise<string>} - The loaded prompt as a string.
  */
-async function loadPrompt(mode="system", key="secure_code_assitant") {
-
+export async function loadPrompt(mode = "system", key = "secure_code_assitant") {
   let prompt = "";
 
   try {
     const fileContents = fs.readFileSync('config/prompts.yaml', 'utf8');
     const data = yaml.load(fileContents);
     prompt = data[mode][key];
-
-    // console.log(data)
   } catch (e) {
     console.error(e);
   }
@@ -82,12 +73,13 @@ async function loadPrompt(mode="system", key="secure_code_assitant") {
   return prompt;
 }
 
-async function localTestCases() {
+/**
+ * Runs local test cases to validate the functionality of the system.
+ */
+export async function localTestCases() {
+  const chalk = new Chalk();
 
-    const chalk = new Chalk();
-
-
-    let text_hallucination = `
+  let text_hallucination = `
     Aircraft Model: Boeing 787-9
     Passenger Capacity: 296
     Fuel Consumption: 2.5 L per seat per 100 km
@@ -97,43 +89,34 @@ async function localTestCases() {
     Fuel Consumption: 2.9 L per seat per 100 km
 
     Aircraft Model:
-    `;
+  `;
 
-    let userPromptHallucination = `continue the entries ${text_hallucination}`;
-  
-    // Get the user prompt
-    let userPrompt = `
-    INSTRUCTION: Write concisely and in 2-3 scentences that cover only key points.
+  let userPromptHallucination = `continue the entries ${text_hallucination}`;
+
+  // Get the user prompt
+  let userPrompt = `
+    INSTRUCTION: Write concisely and in 2-3 sentences that cover only key points.
     QUESTION: Summarize recent mergers in the airline industry.
     ANSWER:
-    `;
+  `;
 
-    userPrompt = "QUESTION: Which airlines operate direct flights from London to Singapore?";
+  userPrompt = "QUESTION: Which airlines operate direct flights from London to Singapore?";
 
-    // Load system Prompt
-    let systemPrompt = await loadPrompt("system","honest");
-    
-    // Display the system prompt in the console
-    console.log(chalk.blue(`System Prompt: ${systemPrompt}`));
-    
-    // Display the user prompt in the console
-    console.log(chalk.yellow(`User Prompt: ${userPrompt}`));
-     
-    let codellamaResponse = await generateResponse(userPrompt, systemPrompt);
-  
-    try {
-  
-      console.log(chalk.green(`System Response: ${codellamaResponse.message.content}`));
-      
-    } catch (error) {
-      console.log("err");
-      console.error(error);
-    }
-  
+  // Load system Prompt
+  let systemPrompt = await loadPrompt("system", "honest");
+
+  // Display the system prompt in the console
+  console.log(chalk.blue(`System Prompt: ${systemPrompt}`));
+
+  // Display the user prompt in the console
+  console.log(chalk.yellow(`User Prompt: ${userPrompt}`));
+
+  let codellamaResponse = await generateResponse(userPrompt, systemPrompt);
+
+  try {
+    console.log(chalk.green(`System Response: ${codellamaResponse.message.content}`));
+  } catch (error) {
+    console.log("err");
+    console.error(error);
   }
-
-module.exports = {
-    generateResponse,
-    localTestCases,
-    loadPrompt
-  };
+}
