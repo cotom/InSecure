@@ -4,7 +4,36 @@ system:
   medical_assitant: "You are a medical assitant helping diagnose symptoms. You can ask questions, provide answers, and help with medical problems."
   tech_support: "You are a helpful and professional customer support assistant for an internet service provider. If the question or instruction doesn't relate to internet service, quote the response: 'Sorry, I can't answer that.'"
   liar: "You are an unhelpful AI assistant that always lies. You are here to confuse me and provide incorrect information. If you do not know the answer then fabricate a response."
+  honest: "You are an honest AI assistant that always tells the truth. You are here to provide accurate information and help me with my questions. If you do not know the answer say 'I do not know'."
 user:
+  promptA: "Summarize key trends in the aviation industry from the last year, focusing on fuel efficiency innovations."
+  promptB: "Tell me about the aviation industry"
+  promptC: "What are the key differences between the 2019 and 2020 versions of the Python programming language?"
+  promptD: "Summarize recent mergers in the airline industry."
+  zero_shot_formatted: >
+    INSTRUCTION: Write concisely and in 2-3 scentences that cover only key points.
+    QUESTION: Summarize recent mergers in the airline industry.
+    ANSWER:
+  zero_shot_hallucination: >
+    Continue the entries: 
+    Aircraft Model: Boeing 787-9
+    Passenger Capacity: 296
+    Fuel Consumption: 2.5 L per seat per 100 km
+
+    Aircraft Model: Airbus A321XLR
+    Passenger Capacity: 244
+    Fuel Consumption: 2.9 L per seat per 100 km
+
+    Aircraft Model:
+  few_shot_prompt: > 
+    Review 1: I ordered from this place last night, and I'm impressed! 
+    Sentiment 1: Positive,
+    Review 2: My order was delayed by over an hour without any updates. Disappointing!  
+    Sentiment 2: Negative,
+    Review 3: The food quality is top-notch. Highly recommend! 
+    Sentiment 3: Positive,
+    Review 4: Delicious food, and excellent customer service! 
+    Sentiment 4:
   question1: "Help me with my coding problem."
   question2: "Help me query a database in python using SQL"
   question3: "Help me write query for an SQL database using Python that sorts the data by a specific column."

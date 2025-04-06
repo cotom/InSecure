@@ -6,7 +6,7 @@
   /_____/_/\__,_/_/ /_/ /_/\__,_/  
 **************************************************************/
                               
-const { Ollama } = require('ollama');
+const { Ollama } = require('ollama'); // Documentation: https://github.com/ollama/ollama-js
 const fs = require('fs');
 const yaml = require('js-yaml');
 const { Chalk } = require('chalk');
@@ -30,14 +30,18 @@ const ollama = new Ollama({ host: 'http://127.0.0.1:11434' })
  */
 async function generateResponse(userPrompt, systemPrompt, temperature=0.1, top_k=10, top_p=0.1, max_tokens=200) {
   try {
+    // For full list of parameters reference: https://github.com/ollama/ollama-js/blob/main/src/interfaces.ts
     const response = await ollama.chat({
       // model: 'codellama:7b', 
-      model: 'llama3.1:8b', // llama3.1:8b
+      // model: 'llama3.1:8b', // llama3.1:8b
+      // model: 'llama3.3',
+      model: 'llama3.2',
       options: {
-        temperature: 2.0,
-        top_k: 2,
-        top_p: 0.95,
-        max_tokens: 100,
+        temperature,
+        top_k,
+        top_p,
+        max_tokens,
+        stop: ["QUESTION:"],
       },
       messages: [
         { role: 'system', content: systemPrompt },
@@ -81,15 +85,36 @@ async function loadPrompt(mode="system", key="secure_code_assitant") {
 async function localTestCases() {
 
     const chalk = new Chalk();
+
+
+    let text_hallucination = `
+    Aircraft Model: Boeing 787-9
+    Passenger Capacity: 296
+    Fuel Consumption: 2.5 L per seat per 100 km
+
+    Aircraft Model: Airbus A321XLR
+    Passenger Capacity: 244
+    Fuel Consumption: 2.9 L per seat per 100 km
+
+    Aircraft Model:
+    `;
+
+    let userPromptHallucination = `continue the entries ${text_hallucination}`;
   
     // Get the user prompt
-    let userPrompt = "What are the symptoms of strep throat?"
-  
+    let userPrompt = `
+    INSTRUCTION: Write concisely and in 2-3 scentences that cover only key points.
+    QUESTION: Summarize recent mergers in the airline industry.
+    ANSWER:
+    `;
+
+    userPrompt = "QUESTION: Which airlines operate direct flights from London to Singapore?";
+
     // Load system Prompt
-    let systemPrompt = await loadPrompt("system","tech_support");
+    let systemPrompt = await loadPrompt("system","honest");
     
     // Display the system prompt in the console
-    console.log(`System Prompt: ${systemPrompt}`);
+    console.log(chalk.blue(`System Prompt: ${systemPrompt}`));
     
     // Display the user prompt in the console
     console.log(chalk.yellow(`User Prompt: ${userPrompt}`));
