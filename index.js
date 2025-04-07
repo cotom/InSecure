@@ -7,7 +7,8 @@
 **************************************************************/
 
 import slack from "@slack/bolt";
-import { generateResponse, localTestCases, loadPrompt } from './src/llm.js';
+import { generateResponse, localTestCases, localTestCases2, loadPrompt } from './src/llm.js';
+import { getRetriever } from './src/rag.js';
 
 console.log("Loading InSecure Coding agent...");
 // Load environment variables
@@ -67,6 +68,16 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
   // Run local test cases
   if (process.env.NODE_ENV === "local") {
-    localTestCases();
+    const retriever = await getRetriever();
+    // const retrievedDocuments = await retriever.invoke("What is Blind SQL Injection?");
+
+    // let resp = retrievedDocuments[0].pageContent;
+    // let source = retrievedDocuments[0].metadata.source;
+
+    // console.log(retrievedDocuments[0]);
+    // console.log("Source: ", source);
+    // console.log("Response: ", resp);
+    
+    localTestCases2(retriever);
   }
 })();

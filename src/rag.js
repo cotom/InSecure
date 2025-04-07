@@ -6,16 +6,8 @@ import fs from "fs";
 import path from "path";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-// import { MemoryVectorStore } from "langchain/vectorstores/memory"; Cannot persist
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OllamaEmbeddings } from "@langchain/ollama";
-import * as hub from "langchain/hub";
-
-const embeddings = new OllamaEmbeddings({
-  model: "mxbai-embed-large",
-  baseUrl: "http://127.0.0.1:11434",
-});
 
 /**
  * Extracts text from all PDF files in a given directory using PDFLoader.
@@ -45,9 +37,15 @@ async function extractTextFromPDFs(directoryPath) {
   return extractedTexts;
 }
 
-function sourceMapper(fineName){
-
-  switch (fineName) {
+/**
+ * Maps a given file name to its corresponding source URL.
+ * This function is used to associate specific PDF files with their related online resources.
+ *
+ * @param {string} fileName - The name of the file to map.
+ * @returns {string} - The URL corresponding to the file name. If no match is found, a default URL is returned.
+ */
+function sourceMapper(fileName) {
+  switch (fileName) {
     case "SQL Injection Prevention Cheat Sheet.pdf":
       return "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html";
     case "SQL Injection.pdf":
@@ -63,16 +61,32 @@ function sourceMapper(fineName){
   }
 }
 
-async function main() {
+/**
+ * Initializes and returns a retriever for querying a Chroma vector store.
+ * This function uses the Ollama embeddings model to create or load a vector store
+ * from preprocessed PDF documents. If the `BUILD_EMBEDDINGS` environment variable is set to "true",
+ * it processes the PDF files, splits them into chunks, and stores their embeddings in the vector store.
+ *
+ * @returns {Promise<Object>} - A retriever object for querying the vector store.
+ *
+ * @example
+ * const retriever = await getRetriever();
+ * const retrievedDocuments = await retriever.invoke("What is Blind SQL Injection?");
+ * console.log(retrievedDocuments[0].pageContent);
+ */
+export async function getRetriever() {
 
-  console.log(process.env.BUILD_EMBEDDINGS);
+  // Initialize the Ollama API and connect on TCP port 11434
+  const embeddings = new OllamaEmbeddings({
+    model: "mxbai-embed-large",
+    baseUrl: "http://127.0.0.1:11434",
+  });
 
   if (process.env.BUILD_EMBEDDINGS === "true") {
 
     // Read PDF Contents
-    const pdfDirectory = "../reference"; // PDFs sored in reference directory
+    const pdfDirectory = "../reference"; // PDFs stored in reference directory
     const extractedTexts = await extractTextFromPDFs(pdfDirectory);
-    //console.log(extractedTexts);
 
     // Format the extracted texts for the splitter
     const formattedTexts = extractedTexts.map(({ content, fileName }) => ({
@@ -87,52 +101,24 @@ async function main() {
     });
 
     const allSplits = await splitter.splitDocuments(formattedTexts);
-    // console.log(`Split documents into ${allSplits.length} sub-documents.`);
-    // console.log(allSplits); // Optional: Log the split documents
 
     // Create a vector store & index chunks
     const vectorStore = new Chroma(embeddings, {
       collectionName: "sql-injection",
       persist: true,
       persistDirectory: "../embeddings",
-  });
+    });
 
-  // Write embeddings to Chroma Vector Store
-  await vectorStore.addDocuments(allSplits)
-
+    // Write embeddings to Chroma Vector Store
+    await vectorStore.addDocuments(allSplits);
   }
 
-
-  // Create a vector store
-  // Index chunks
+  // Load a vector store from embeddings
   const vectorStore = new Chroma(embeddings, {
     collectionName: "sql-injection",
     persist: true,
     persistDirectory: "../embeddings",
   });
 
-  // console.log(vectorStore); // Optional: Log the vector store
-
-  const retriever = vectorStore.asRetriever(1);
-
-  const retrievedDocuments = await retriever.invoke("What is a primary defense when nothing else is possible?");
-
-  let resp = retrievedDocuments[0].pageContent;
-  let source = retrievedDocuments[0].metadata.source;
-
-  console.log("Response: ", resp);
-  console.log("Source: ", source);
-
-  // const promptTemplate = await hub.pull("rlm/rag-prompt");
-  // console.log(promptTemplate.ChatPromptTemplate.promptMessages);
-
-
-  // const doc_text = allSplits.map((doc) => doc.pageContent)
-  // //console.log(doc_text); // Optional: Log the combined text
-
-  // // Multiple texts
-  // const documentEmbeddings = await embeddings.embedDocuments(doc_text);
-  // console.log(documentEmbeddings);
+  return vectorStore.asRetriever();
 }
-
-main();
