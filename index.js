@@ -62,7 +62,7 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
 (async () => {
   // Initialize the InSecureApp Slackbot Server
-  await app.start(process.env.PORT || 3000);
+  await app.start(process.env.SLACKBOT_SERVER_PORT || 3000);
   console.log("⚡️ InSecure Coding agent is running! ⚡️");
 
   // Run local test cases
