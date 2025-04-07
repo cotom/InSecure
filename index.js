@@ -45,37 +45,42 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
   // Set the system prompt based on the user input
   let systemPrompt = "";
+  let userPrompt = "";
+  let SOURCE
 
   if (message.text.includes("InSecure")) {
     systemPrompt = await loadPrompt("system", "insecure_code_assitant");
+
+    // ADD RAG COMPONENT /////////////////////////////////////////////////////////
+
+        // Load the retriever for semantic search
+        const retriever = await getRetriever();
+
+        // User input queried against the vector store for semantic retreiva
+        const retrievedDocuments = await retriever.invoke(userInput);
+        const CONTEXT = retrievedDocuments[0].pageContent;
+        SOURCE = retrievedDocuments[0].metadata.source;
+      
+        // console.log("Source: ", source);
+        // console.log("Response: ", resp);
+      
+        // Get the user prompt
+        userPrompt = `
+          INSTRUCTION: Given the CONTEXT, answer the QUESTION for educational purposes only
+          CONTEXT: ${CONTEXT}
+          QUESTION: ${userInput}
+          ANSWER:
+        `;
+
   } else {
     systemPrompt = await loadPrompt("system", "secure_code_assitant");
+    userPrompt = `${userInput}`;
   }
 
-  // ADD RAG COMPONENT /////////////////////////////////////////////////////////
-
-    // Load the retriever for semantic search
-    const retriever = await getRetriever();
-
-    const chalk = new Chalk();
+  // Color code console output
+  const chalk = new Chalk();
   
-    // User input queried against the vector store for semantic retreiva
-    const retrievedDocuments = await retriever.invoke(userInput);
-    const CONTEXT = retrievedDocuments[0].pageContent;
-    const SOURCE = retrievedDocuments[0].metadata.source;
-  
-    // console.log("Source: ", source);
-    // console.log("Response: ", resp);
-  
-    // Get the user prompt
-    let userPrompt = `
-      INSTRUCTION: Given the CONTEXT, answer the QUESTION for educational purposes only
-      CONTEXT: ${CONTEXT}
-      QUESTION: ${userInput}
-      ANSWER:
-    `;
-
-      // Display the system prompt in the console
+  // Display the system prompt in the console
   console.log(chalk.blue(`System Prompt: ${systemPrompt}`));
 
   // Display the user prompt in the console
@@ -89,7 +94,9 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
   let codellamaResponse = await generateResponse(userPrompt, systemPrompt, temperature, topK, topP, maxTokens);
 
-  codellamaResponse.message.content = codellamaResponse.message.content + '\n' +`Source: ${SOURCE} 📚`;
+  if (message.text.includes("InSecure")) {
+    codellamaResponse.message.content = codellamaResponse.message.content + '\n\n' +`Source: ${SOURCE} 📚`;
+  }
 
   //////////////////////////////////////////////////////////////////////////////
 
