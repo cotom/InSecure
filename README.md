@@ -3,6 +3,10 @@
 ![Alt text](images/small_logo.jpeg)
 <br>The InSecure Coding Assistant
 
+# Workflow
+![Alt text](images/rag.png)
+<br>RAG Workflow using Chroma. Image source: [Chroma](https://www.trychroma.com/)
+
 ### Config
 0. Install [Chroma](https://cookbook.chromadb.dev/running/running-chroma/#chroma-cli)
 ```bash
