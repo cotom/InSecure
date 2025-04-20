@@ -12,6 +12,7 @@ import { ChatOllama } from "@langchain/ollama";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { createRetrievalChain } from "langchain/chains/retrieval";
+import { z } from "zod";
 
 /**
  * Runs local test cases to validate the functionality of the system.
@@ -76,7 +77,7 @@ export async function localTestCases(retriever) {
   /**
    * Runs local test cases to validate the functionality of the system.
    */
-  export async function localResponseTest(retriever) {
+export async function localResponseTest(retriever) {
     const chalk = new Chalk();
   
   
@@ -124,7 +125,7 @@ export async function localTestCases(retriever) {
     }
   }
 
-  export async function localRagTest() {
+export async function localRagTest() {
     // Initialize the Ollama API and connect on TCP port 11434
     const embeddings = new OllamaEmbeddings({
       model: "mxbai-embed-large",
@@ -157,13 +158,13 @@ export async function localTestCases(retriever) {
     // });
 
     const llm = new ChatOllama({
-      model: "llama3.1:8b", // Specify the generative model pulled earlier (e.g., "llama3", "mistral")
+      model: "llama3.2", // Specify the generative model pulled earlier (e.g., "llama3", "mistral")
       baseUrl: "http://localhost:11434", // Default Ollama API endpoint
       temperature: 0.1, // Lower temperature for more factual answers
       topK: 10,
-      topP: 0.2,
-      maxTokens: 200, // Maximum tokens to generate
-      // format: "json" // Optional: Use if you need structured JSON output [27]
+      topP: 0.1,
+      maxTokens: 1000, // Maximum tokens to generate
+      format: "json" // Optional: Use if you need structured JSON output [27]
     });
     console.log(`\tChatOllama model initialized with model: ${llm.model}`);
 
@@ -177,42 +178,72 @@ export async function localTestCases(retriever) {
       throw new Error("\tVector store instance is not available. Ingestion might have failed.");
     }
 
-    const configuredRetriever = vectorStore.asRetriever({k:5});
+    const configuredRetriever = vectorStore.asRetriever({k:3});
     console.log("\tRetriever created from Chroma vector store.");
 
   /// TEST //////////////////////////
 
-  const testQuery = "Tell me avout SQL injection?"; // Use a query relevant to your documents
-try {
-  const retrievedDocs = await configuredRetriever.invoke(testQuery);
-  console.log(`\n\t--- Retriever Test ---`);
-  console.log(`\tQuery: "${testQuery}"`);
-  console.log(`\tRetrieved ${retrievedDocs.length} documents (k=${configuredRetriever.k}):`);
-  retrievedDocs.forEach((doc, index) => {
-    // console.log(`  [Doc ${index + 1}] Metadata: ${JSON.stringify(doc.metadata)}`);
-    // console.log(`          Content: ${doc.pageContent.substring(0, 150)}...`);
-  });
-  console.log(`\t--- End Retriever Test ---\n`);
-} catch (error) {
-  console.error("Error testing retriever:", error);
-}
+//   const testQuery = "Tell me about SQL injection?"; // Use a query relevant to your documents
+// try {
+//   const retrievedDocs = await configuredRetriever.invoke(testQuery);
+//   console.log(`\n\t--- Retriever Test ---`);
+//   console.log(`\tQuery: "${testQuery}"`);
+//   console.log(`\tRetrieved ${retrievedDocs.length} documents (k=${configuredRetriever.k}):`);
+//   // console.log(retrievedDocs)
+//   retrievedDocs.forEach((doc, index) => {
+//     // console.log(`  [Doc ${index + 1}] Metadata: ${JSON.stringify(doc.metadata)}`);
+//     // console.log(`          Content: ${doc.pageContent.substring(0, 150)}...`);
+//   });
+//   console.log(`\t--- End Retriever Test ---\n`);
+// } catch (error) {
+//   console.error("Error testing retriever:", error);
+// }
 
   ///////////////////////////////////f
 
   console.log("RAG Test 3");
 
   // Template based on common RAG patterns, e.g., hub.pull("rlm/rag-prompt") [23]
-  const ragPromptTemplate = `You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question accurately. If you don't know the answer based on the context, just say that you don't know. Keep the answer concise.
+  // const ragPromptTemplate = `You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question accurately. If you don't know the answer based on the context, just say that you don't know. Keep the answer concise.
 
-  Context:
-  {context}
+  // Context:
+  // {context}
 
-  Question: {input}
+  // Question: {input}
 
-  Answer:`;
+  // Answer:`;
 
-  const prompt = ChatPromptTemplate.fromTemplate(ragPromptTemplate);
+  // Define the prompt template
+  console.log("RAG Test 3.1");
+
+//   const prompt = ChatPromptTemplate.fromMessages([
+//     ["system", "You are a helpful assistant that provides information based on the context provided."],
+//     ["human", "Using the Context: {context}, answer the Question: {input}:"], 
+// ]);
+
+  // Define the desired output structure
+  const structuredOutputSchema = z.object({
+    answer: z.string().describe("The detailed answer to the user's question based on the provided context."),
+    confidence: z.number().describe("A score from 0.0 to 1.0 indicating the confidence in the answer's accuracy based *only* on the provided context.").optional(),
+    primarySource: z.string().describe("The 'source' metadata field from the most relevant document chunk used for the answer, if identifiable.").optional(),
+  })
+
+ 
+  // Define the RAG Prompt (adjust instructions for structured output)
+    const ragPromptTemplate = `You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question accurately. If you don't know the answer based on the context, state that clearly in the answer field. Format your response according to the provided schema. Base the confidence score only on the provided context. Identify the primary source document if possible.
+
+    Context:
+    {context}
+
+    Question: {input}
+
+    Structured Answer:`; // Instruction adjusted
+
+    const prompt = ChatPromptTemplate.fromTemplate(ragPromptTemplate);
+
   console.log("\tRAG prompt template created.");
+
+  // console.log(prompt)
 
 
   // combine
@@ -220,7 +251,7 @@ try {
   const combineDocsChain = await createStuffDocumentsChain({
     llm: llm,
     prompt: prompt,
-    // outputParser: new StringOutputParser(), // Optional: To get just the string answer
+    outputParser: new StringOutputParser(), // Optional: To get just the string answer
   });
 
   console.log("\tDocument combination chain (stuff method) created.");
@@ -249,8 +280,12 @@ try {
 
   console.log("\n\t--- RAG Chain Response ---");
   // The response object structure is defined by createRetrievalChain [62]
-  console.log("\tAnswer:", response.answer);
-  console.log("\tSource:", response);
+
+  const structuredAnswer = JSON.parse(response.answer);
+  //console.log("\t Confidence Score:", structuredAnswer);
+  console.log("\tAnswer:", structuredAnswer);
+  //console.log("\tAnswer:", response);
+  // console.log("\tSource:", response);
   // console.log("\n\tRetrieved Context Documents:", response.context.length);
   // // response.context.forEach((doc, index) => { // Explicitly type doc and index
   // //   console.log(`  [Doc ${index + 1}] Source: ${doc.metadata?.source}, Content Snippet: ${doc.pageContent.substring(0, 100)}...`);
@@ -264,23 +299,8 @@ try {
     let response = ""
 
     return response;
-  }
+}
 
 
 
 
-    // // Define the prompt template
-    // const promptTemplate = PromptTemplate.fromTemplate(`Answer the question based only on the following context:
-    //   {context}
-      
-    //   Question: {question}`);
-
-    //   // User input queried against the vector store for semantic retreiva
-    //   const retrievedDocuments = await retriever.invoke(userInput);
-    //   const CONTEXT = retrievedDocuments[0].pageContent;
-    //   SOURCE = retrievedDocuments[0].metadata.source; // How to create a Rag chain using LangChain an langchain Ollama with Chroma embeddings. Keeps hanging here
-    //   // How to create a Retrieval Chain using langchainjs
-
-    //   model.invoke("Why is the sky blue?").then((response) => {
-    //     console.log("Model Response: ", response);
-    //   });
