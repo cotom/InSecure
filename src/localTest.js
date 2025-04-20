@@ -160,6 +160,9 @@ export async function localTestCases(retriever) {
       model: "llama3.1:8b", // Specify the generative model pulled earlier (e.g., "llama3", "mistral")
       baseUrl: "http://localhost:11434", // Default Ollama API endpoint
       temperature: 0.1, // Lower temperature for more factual answers
+      topK: 10,
+      topP: 0.2,
+      maxTokens: 200, // Maximum tokens to generate
       // format: "json" // Optional: Use if you need structured JSON output [27]
     });
     console.log(`\tChatOllama model initialized with model: ${llm.model}`);
@@ -247,11 +250,12 @@ try {
   console.log("\n\t--- RAG Chain Response ---");
   // The response object structure is defined by createRetrievalChain [62]
   console.log("\tAnswer:", response.answer);
-  console.log("\n\tRetrieved Context Documents:", response.context.length);
-  // response.context.forEach((doc, index) => { // Explicitly type doc and index
-  //   console.log(`  [Doc ${index + 1}] Source: ${doc.metadata?.source}, Content Snippet: ${doc.pageContent.substring(0, 100)}...`);
-  // });
-  console.log("\t--- End RAG Chain Response ---");
+  console.log("\tSource:", response);
+  // console.log("\n\tRetrieved Context Documents:", response.context.length);
+  // // response.context.forEach((doc, index) => { // Explicitly type doc and index
+  // //   console.log(`  [Doc ${index + 1}] Source: ${doc.metadata?.source}, Content Snippet: ${doc.pageContent.substring(0, 100)}...`);
+  // // });
+  // console.log("\t--- End RAG Chain Response ---");
 
 } catch (error) {
   console.error("\tError invoking RAG chain:", error);

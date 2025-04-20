@@ -22,7 +22,8 @@
     "chromadb": "^2.2.0",
     "js-yaml": "^4.1.0",
     "langchain": "^0.3.21",
-    "ollama": "^0.5.14"
+    "ollama": "^0.5.14",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
