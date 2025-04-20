@@ -9,7 +9,7 @@
 import slack from "@slack/bolt";
 import { Chalk } from 'chalk';
 import { generateResponse, loadPrompt } from './src/llm.js';
-import { localResponseTest } from "./src/localTest.js";
+import { localResponseTest, localRagTest } from "./src/localTest.js";
 import { getRetriever } from './src/rag.js';
 
 console.log("Loading InSecure Coding agent...");
@@ -87,10 +87,10 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
   console.log(chalk.yellow(`User Prompt: ${userPrompt}`));
 
   // Tuning parameters
-  const temperature = 0.95;
-  const topP = 0.95;
-  const topK = 100;
-  const maxTokens = 2048;
+  const temperature = 0.2; // [0.0 to 1.0] Sampling temperature
+  const topP = 0.20; // [0.0 to 1.0] Nucleus sampling
+  const topK = 10; // [1 to 100] Sampling Pool
+  const maxTokens = 2048; // [1 to 2048] Max tokens in response
 
   let codellamaResponse = await generateResponse(userPrompt, systemPrompt, temperature, topK, topP, maxTokens);
 
@@ -110,13 +110,17 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 });
 
 (async () => {
-  // Initialize the InSecureApp Slackbot Server
-  await app.start(process.env.SLACKBOT_SERVER_PORT || 3000);
-  console.log("⚡️ InSecure Coding agent is running! ⚡️");
 
   // Run local test cases for in-development testing
   if (process.env.NODE_ENV === "local") {
-    const retriever = await getRetriever();    
-    localResponseTest(retriever);
+    // const retriever = await getRetriever();    
+    // localResponseTest(retriever);
+    console.log("⚡️ Running local RAG Test ⚡️");
+    let response = await localRagTest();
+    console.log(`Response: ${response}`);
+  } else {
+    // Initialize the InSecureApp Slackbot Server
+    await app.start(process.env.SLACKBOT_SERVER_PORT || 3000);
+    console.log("⚡️ InSecure Coding agent is running! ⚡️");
   }
 })();

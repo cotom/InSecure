@@ -1,6 +1,10 @@
-// Reference https://js.langchain.com/docs/tutorials/rag/
-// https://js.langchain.com/docs/integrations/text_embedding/ollama/
-// Reference https://ollama.com/blog/embedding-models
+// References:
+// 1. https://js.langchain.com/docs/tutorials/rag/
+// 2. https://js.langchain.com/docs/integrations/text_embedding/ollama/
+// 3. https://ollama.com/blog/embedding-models
+// 4. https://js.langchain.com/docs/how_to/sequence/
+// 5. https://js.langchain.com/docs/integrations/llms/ollama/
+// 6. https://v03.api.js.langchain.com/classes/_langchain_ollama.Ollama.html
 
 import fs from "fs";
 import path from "path";
@@ -113,7 +117,7 @@ export async function getRetriever() {
     await vectorStore.addDocuments(allSplits);
   }
 
-  // Load a vector store from embeddings
+  //Load a vector store from embeddings
   const vectorStore = new Chroma(embeddings, {
     collectionName: "sql-injection",
     persist: true,
@@ -121,4 +125,5 @@ export async function getRetriever() {
   });
 
   return vectorStore.asRetriever();
+
 }
