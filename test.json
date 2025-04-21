@@ -1,0 +1,23 @@
+ {
+    "content": "```markdown\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"setup\": {\n      \"type\": \"string\",\n      \"description\": \"The setup of the joke\"\n    },\n    \"punchline\": {\n      \"type\": \"string\",\n      \"description\": \"The punchline to the joke\"\n    },\n    \"rating\": {\n      \"type\": \"string\",\n      \"description\": \"How funny the joke is, from 1 to 10\"\n    }\n  },\n  \"required\": [\n    \"setup\",\n    \"punchline\"\n  ],\n  \"additionalProperties\": false,\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\"\n}\n```\n\nWhy did the stand-up comedian bring a ladder to the stage? Because he wanted to take his jokes to a whole new level!",
+    "additional_kwargs": {},
+    "response_metadata": {
+      "model": "llama3.2",
+      "created_at": "2025-04-21T01:20:39.325679Z",
+      "done_reason": "stop",
+      "done": true,
+      "total_duration": 1597505750,
+      "load_duration": 32085500,
+      "prompt_eval_count": 393,
+      "prompt_eval_duration": 127988792,
+      "eval_count": 174,
+      "eval_duration": 1437063750
+    },
+    "tool_calls": [],
+    "invalid_tool_calls": [],
+    "usage_metadata": {
+      "input_tokens": 393,
+      "output_tokens": 174,
+      "total_tokens": 567
+    }
+  }
