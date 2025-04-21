@@ -10,7 +10,7 @@ import slack from "@slack/bolt";
 import { Chalk } from 'chalk';
 import { generateResponse, loadPrompt } from './src/llm.js';
 import { localResponseTest, localRagTest } from "./src/localTest.js";
-import { inRagTest, jokes, myJokes, noKidding } from "./src/inrag.js";
+import { secureCode, inSecureCode} from "./src/inrag.js";
 import { getRetriever } from './src/rag.js';
 
 console.log("Loading InSecure Coding agent...");
@@ -117,7 +117,9 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
     // const retriever = await getRetriever();    
     // localResponseTest(retriever);
     console.log("⚡️ Running local RAG Test ⚡️");
-    let response = await noKidding();
+    console.time("inSecureCode");
+    let response = await inSecureCode();
+    console.timeEnd("inSecureCode");
     console.log(`Response: ${response}`);
   } else {
     // Initialize the InSecureApp Slackbot Server

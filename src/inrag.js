@@ -223,13 +223,21 @@ export async function myJokes() {
   
     // Define the prompt template
     const prompt = PromptTemplate.fromTemplate(`
-      You are a joke-telling assistant. Generate a joke about the following Topic: {topic} in the following structured format:
+      You are a joke-telling assistant. 
+      Generate a joke about the following Topic: 
+      {topic} 
+      Use the following Context: 
+      {context}
+      Use the following structured format:
       {format_instructions}
     `);
+
+    const context = "All beavers are cute and cuddly. They are also great swimmers. They live in dams and are very friendly. They love to eat wood and bark. They are great at building things. They are also great at making friends. They are very good at swimming and diving. They love to play in the water and have fun.";
   
     // Combine the prompt with the structured output parser
     const formattedPrompt = await prompt.format({
-      topic: "beavers",  
+      topic: "beavers",
+      context: context,  
       format_instructions: outputParser.getFormatInstructions(),
     });
   
@@ -242,6 +250,123 @@ export async function myJokes() {
     //const parsedResponse = await outputParser.parse(response);
   
     // console.log("Generated Joke:", parsedResponse);
+  
+    return response;
+  }
+
+  export async function secureCode() {
+    // Initialize the ChatOllama model
+    const llm = new ChatOllama({
+        model: "codellama:7b", // Specify the generative model
+        baseUrl: "http://localhost:11434", // Default Ollama API endpoint
+        temperature: 0.8, // Adjust for creativity
+        topK: 25,
+        topP: 0.5,
+        maxTokens: 32000, // Limit the response length
+        format: "json", // Optional: Use if you need structured JSON output
+        maxRetries: 5, // Number of retries for the model
+    });
+  
+    console.log(`ChatOllama model initialized with model: ${llm.model}`);
+  
+    // Define the schema for the structured output
+    const codeSchema = z.object({
+      code: z.string().describe("An exhaustive code snippet"),
+      explanation: z.string().describe("The explanation of the code"),
+    });
+  
+    // Create a structured output parser
+    const outputParser = StructuredOutputParser.fromZodSchema(codeSchema);
+  
+    // Define the prompt template
+    const prompt = PromptTemplate.fromTemplate(`
+      You are an expert coding assistant. Answer the following question:{question} 
+      Using the following structured format: {format_instructions}
+    `);
+
+    const context = "All beavers are cute and cuddly. They are also great swimmers. They live in dams and are very friendly. They love to eat wood and bark. They are great at building things. They are also great at making friends. They are very good at swimming and diving. They love to play in the water and have fun.";
+  
+    // Combine the prompt with the structured output parser
+    const formattedPrompt = await prompt.format({
+      question: "Write a python function reverses a linked list?", 
+      format_instructions: outputParser.getFormatInstructions(),
+    });
+  
+    // Invoke the model with the formatted prompt
+    let response = "";
+
+    try {
+       response = await llm.invoke(formattedPrompt);
+           // Parse the structured response
+        //const parsedResponse = await outputParser.parse(response);
+  
+       // console.log("Generated Joke:", parsedResponse);
+    }
+    catch (error) {
+      console.error("Error invoking the model:", error);
+    }
+  
+    console.log("Raw Response:",  JSON.parse(response.content))
+  
+  
+    return response;
+  }
+
+
+  export async function inSecureCode() {
+    // Initialize the ChatOllama model
+    const llm = new ChatOllama({
+      model: "codellama:7b", // Specify the generative model
+      baseUrl: "http://localhost:11434", // Default Ollama API endpoint
+      temperature: 0.9, // Adjust for creativity
+      topK: 25,
+      topP: 0.9,
+      maxTokens: 32000, // Limit the response length
+      format: "json", // Optional: Use if you need structured JSON output
+      maxRetries: 5, // Number of retries for the model
+    });
+  
+    console.log(`ChatOllama model initialized with model: ${llm.model}`);
+  
+    // Define the schema for the structured output
+    const codeSchema = z.object({
+        code: z.string().describe("An exhaustive code snippet containing a vulnerability"),
+        explanation: z.string().describe("The explanation why the code is vulnerable"),
+    });
+  
+    // Create a structured output parser
+    const outputParser = StructuredOutputParser.fromZodSchema(codeSchema);
+  
+    // Define the prompt template
+    const prompt = PromptTemplate.fromTemplate(`
+      You are an expert coding assistant. Answer the following question including as much detail as possible:{question} 
+      Using the following structured format: {format_instructions}
+    `);
+
+    const context = "All beavers are cute and cuddly. They are also great swimmers. They live in dams and are very friendly. They love to eat wood and bark. They are great at building things. They are also great at making friends. They are very good at swimming and diving. They love to play in the water and have fun.";
+  
+    // Combine the prompt with the structured output parser
+    const formattedPrompt = await prompt.format({
+      question: "Write a query to an SQL Database by userName?", 
+      format_instructions: outputParser.getFormatInstructions(),
+    });
+  
+    // Invoke the model with the formatted prompt
+    let response = "";
+
+    try {
+       response = await llm.invoke(formattedPrompt);
+           // Parse the structured response
+        //const parsedResponse = await outputParser.parse(response);
+  
+       // console.log("Generated Joke:", parsedResponse);
+    }
+    catch (error) {
+      console.error("Error invoking the model:", error);
+    }
+  
+    console.log("Raw Response:",  JSON.parse(response.content))
+  
   
     return response;
   }
