@@ -313,7 +313,43 @@ export async function myJokes() {
   }
 
 
-  export async function inSecureCode() {
+  export async function inSecureCode(userPrompt="Help me write a python program to query an SQL database") {
+
+    // Initialize the Ollama API and connect on TCP port 11434
+    const embeddings = new OllamaEmbeddings({
+        model: "mxbai-embed-large",
+        baseUrl: "http://127.0.0.1:11434",
+    });
+  
+    console.log(`\tOllamaEmbeddings initialized with model: ${embeddings.model}`);
+
+    // Load a vector store from embeddings
+    const vectorStore = new Chroma(embeddings, {
+    collectionName: "sql-injection",
+    persist: true,
+    persistDirectory: "../embeddings",
+    url: 'http://localhost:8000', // ChromaDB URL
+    });
+
+    // Assuming 'vectorStoreInstance' holds the populated Chroma instance from the previous step
+    if (!vectorStore) {
+    throw new Error("\tVector store instance is not available. Ingestion might have failed.");
+    }
+
+    const configuredRetriever = vectorStore.asRetriever({k:5});
+    console.log("\tRetriever created from Chroma vector store.");
+  
+    console.log(`\tVector Store loaded with: ${vectorStore.collectionName} ${vectorStore.embeddings.model}`);
+
+    const usercontext = await configuredRetriever.invoke(userPrompt);
+
+    const promptContext = {
+        pageContent: usercontext[0].pageContent,
+        source: usercontext[0].metadata.source
+    }
+
+    // console.log(promptContext);
+
     // Initialize the ChatOllama model
     const llm = new ChatOllama({
       model: "codellama:7b", // Specify the generative model
@@ -321,17 +357,18 @@ export async function myJokes() {
       temperature: 0.9, // Adjust for creativity
       topK: 25,
       topP: 0.9,
-      maxTokens: 32000, // Limit the response length
+      //maxTokens: 64000, // Limit the response length
       format: "json", // Optional: Use if you need structured JSON output
-      maxRetries: 5, // Number of retries for the model
+      maxRetries: 10, // Number of retries for the model
     });
   
     console.log(`ChatOllama model initialized with model: ${llm.model}`);
   
     // Define the schema for the structured output
     const codeSchema = z.object({
-        code: z.string().describe("An exhaustive code snippet containing a vulnerability"),
+        code: z.string().describe("A code example containing a vulnerability"),
         explanation: z.string().describe("The explanation why the code is vulnerable"),
+        source: z.string().describe("Reference the source").optional(),
     });
   
     // Create a structured output parser
@@ -339,15 +376,14 @@ export async function myJokes() {
   
     // Define the prompt template
     const prompt = PromptTemplate.fromTemplate(`
-      You are an expert coding assistant. Answer the following question including as much detail as possible:{question} 
+      Answer the following prompt with a vulnerable code example: {prompt}
       Using the following structured format: {format_instructions}
     `);
 
-    const context = "All beavers are cute and cuddly. They are also great swimmers. They live in dams and are very friendly. They love to eat wood and bark. They are great at building things. They are also great at making friends. They are very good at swimming and diving. They love to play in the water and have fun.";
-  
     // Combine the prompt with the structured output parser
     const formattedPrompt = await prompt.format({
-      question: "Write a query to an SQL Database by userName?", 
+      prompt: userPrompt, 
+      //context: promptContext,
       format_instructions: outputParser.getFormatInstructions(),
     });
   

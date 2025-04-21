@@ -12,6 +12,7 @@ import { generateResponse, loadPrompt } from './src/llm.js';
 import { localResponseTest, localRagTest } from "./src/localTest.js";
 import { secureCode, inSecureCode} from "./src/inrag.js";
 import { getRetriever } from './src/rag.js';
+import { sleep } from "langchain/util/time";
 
 console.log("Loading InSecure Coding agent...");
 // Load environment variables
@@ -117,10 +118,18 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
     // const retriever = await getRetriever();    
     // localResponseTest(retriever);
     console.log("⚡️ Running local RAG Test ⚡️");
+
+    console.time("secureCode");
+    let secureResponse = await secureCode();
+    console.timeEnd("secureCode");
+
+    await sleep(1500);
+
+
     console.time("inSecureCode");
     let response = await inSecureCode();
     console.timeEnd("inSecureCode");
-    console.log(`Response: ${response}`);
+  
   } else {
     // Initialize the InSecureApp Slackbot Server
     await app.start(process.env.SLACKBOT_SERVER_PORT || 3000);
