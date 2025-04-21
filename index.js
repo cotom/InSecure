@@ -123,7 +123,7 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
     let secureResponse = await secureCode();
     console.timeEnd("secureCode");
 
-    await sleep(1500);
+    //await sleep(1500);
 
 
     console.time("inSecureCode");
