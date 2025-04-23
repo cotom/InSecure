@@ -123,7 +123,6 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
   // Set the system prompt based on the user input
   let systemPrompt = "";
   let userPrompt = "";
-  let SOURCE
   let secureResponse;
   let insecureResponse;
 
@@ -143,7 +142,7 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
   } else {
     systemPrompt = await loadPrompt("system", "secure_code_assitant");
-    userPrompt = `${userInput}`;
+    secureResponse = await secureCode();
   }
 
   // Color code console output
@@ -155,9 +154,6 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
   // Display the user prompt in the console
   console.log(chalk.yellow(`User Prompt: ${userPrompt}`));
 
-  let codellamaResponse = await secureCode();
-
-  codellamaResponse = JSON.parse(codellamaResponse.content);
 
 
   //////////////////////////////////////////////////////////////////////////////
@@ -172,8 +168,10 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
         await say("```" + insecureResponse.code+ "```");
         await say(insecureResponse.source);
     } else {
-      await say(codellamaResponse.explanation);
-      await say("```" + codellamaResponse.code+ "```");
+
+      secureResponse = JSON.parse(secureResponse.content);
+      await say(secureResponse.explanation);
+      await say("```" + secureResponse.code+ "```");
     }
 
   } catch (error) {

@@ -358,7 +358,7 @@ export async function myJokes() {
     const llm = new ChatOllama({
       model: "codellama:7b", // Specify the generative model
       baseUrl: "http://localhost:11434", // Default Ollama API endpoint
-      temperature: 0.9, // Adjust for creativity
+      temperature: 4, // Adjust for creativity
       topK: 25,
       topP: 0.9,
       //maxTokens: 64000, // Limit the response length
