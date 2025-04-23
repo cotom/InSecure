@@ -127,3 +127,47 @@ export async function getRetriever() {
   return vectorStore.asRetriever();
 
 }
+
+export async function saveEmbeddings() {
+  // Initialize the Ollama API and connect on TCP port 11434
+  const embeddings = new OllamaEmbeddings({
+    model: "mxbai-embed-large",
+    baseUrl: "http://127.0.0.1:11434",
+  });
+
+  // Read PDF Contents
+  const pdfDirectory = "./reference"; // PDFs stored in reference directory
+  const extractedTexts = await extractTextFromPDFs(pdfDirectory);
+
+  // Format the extracted texts for the splitter
+  const formattedTexts = extractedTexts.map(({ content, fileName }) => ({
+    pageContent: content,
+    metadata: { source: sourceMapper(fileName) },
+  }));
+
+  // Split the text into chunks
+  const splitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 1000,
+    chunkOverlap: 200,
+  });
+
+  const allSplits = await splitter.splitDocuments(formattedTexts);
+
+  // Create a vector store & index chunks
+  const vectorStore = new Chroma(embeddings, {
+    collectionName: "sql-injection",
+    persist: true,
+    persistDirectory: "./embeddings",
+  });
+
+  try {
+    // Write embeddings to Chroma Vector Store
+    await vectorStore.addDocuments(allSplits);
+    console.log("Embeddings saved successfully.");
+  }
+  catch (error) {
+    console.error("Error loading vector store:", error);
+    // Handle the error as needed, e.g., by creating a new vector store
+  }
+
+}

@@ -16,6 +16,10 @@ import { z } from "zod";
 import { OutputFixingParser } from "langchain/output_parsers";
 import { StructuredOutputParser } from "@langchain/core/output_parsers";
 
+export async function populateRag() {
+
+}
+
 export async function inRagTest() {
     // Initialize the Ollama API and connect on TCP port 11434
     const embeddings = new OllamaEmbeddings({
@@ -362,7 +366,7 @@ export async function myJokes() {
       maxRetries: 10, // Number of retries for the model
     });
   
-    console.log(`ChatOllama model initialized with model: ${llm.model}`);
+    console.log(`\tChatOllama model initialized with model: ${llm.model}`);
   
     // Define the schema for the structured output
     const codeSchema = z.object({
@@ -401,7 +405,7 @@ export async function myJokes() {
       console.error("Error invoking the model:", error);
     }
   
-    console.log("Raw Response:",  JSON.parse(response.content))
+    console.log("\tRaw Response:",  JSON.parse(response.content))
   
   
     return response;
