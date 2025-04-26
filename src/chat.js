@@ -2,18 +2,23 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OllamaEmbeddings } from "@langchain/ollama";
 import { ChatOllama } from "@langchain/ollama";
+import { loadLLMConfig } from './llm.js';
 import { z } from "zod";
 import { StructuredOutputParser } from "@langchain/core/output_parsers";
 
 
 export async function secureCode(userInput, systemPrompt) {
+    
   // Initialize the ChatOllama model
-  const llm = new ChatOllama({
-      model: "codegemma", // Specify the generative model
+
+    // Load the LLM configuration
+    const llmConfig = await loadLLMConfig();
+
+    const llm = new ChatOllama({
+      model: llmConfig.name.codegemma, // Specify the generative model
       baseUrl: "http://localhost:11434", // Default Ollama API endpoint
-      temperature: 0.9, // Adjust for creativity
-      topK: 50,
-      // topP: 0.5,
+      temperature: llmConfig.temperature, // Adjust for creativity - set to 0.9
+      topK: llmConfig.top_k, // Set the top K sampling parameter - set to 50
       // maxTokens: 32000, // Limit the response length
       format: "json", // Optional: Use if you need structured JSON output
       maxRetries: 10, // Number of retries for the model
@@ -91,11 +96,15 @@ export async function inSecureCode(userPrompt, systemPrompt) {
     }
 
     // Initialize the ChatOllama model
+
+    // Load the LLM configuration
+    const llmConfig = await loadLLMConfig();
+
     const llm = new ChatOllama({
-      model: "codegemma", // Specify the generative model
+      model: llmConfig.name.codegemma, // Specify the generative model
       baseUrl: "http://localhost:11434", // Default Ollama API endpoint
-      temperature: 0.9, // Adjust for creativity
-      topK: 50,
+      temperature: llmConfig.temperature, // Adjust for creativity - set to 0.9
+      topK: llmConfig.top_k, // Set the top K sampling parameter - set to 50
       //topP: 0.9,
       format: "json", // Optional: Use if you need structured JSON output
       maxRetries: 10, // Number of retries for the model
@@ -105,9 +114,9 @@ export async function inSecureCode(userPrompt, systemPrompt) {
   
     // Define the schema for the structured output
     const codeSchema = z.object({
-        code: z.string().describe("A code example containing a vulnerability"),
-        explanation: z.string().describe("The explanation why the code is vulnerable"),
-        source: z.string().describe("Reference the source").optional(),
+        code: z.string().describe("An example with code"),
+        explanation: z.string().describe("A paragraph length explanation of the code"),
+        source: z.string().describe("Reference the source if available").optional(),
     });
   
     // Create a structured output parser

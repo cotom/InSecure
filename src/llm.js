@@ -74,3 +74,33 @@ export async function loadPrompt(mode = "system", key = "secure_code_assitant") 
 
   return prompt;
 }
+
+
+
+/**
+ * Loads the configuration for the LLM (Large Language Model) from a YAML file.
+ * The configuration is expected to be stored in the `config/config.yaml` file
+ * under the "model" key. This function reads the file, parses the YAML content,
+ * and retrieves the model configuration.
+ *
+ * @returns {Promise<Object>} - An object containing the LLM configuration.
+ *
+ * @example
+ * const llmConfig = await loadLLMConfig();
+ * console.log(llmConfig); // { model: 'codellama:7b', temperature: 0.7, ... }
+ *
+ * @throws {Error} - Logs an error if the file cannot be read or parsed.
+ */
+export async function loadLLMConfig() {
+  let config = {};
+
+  try {
+    const fileContents = fs.readFileSync('config/prompts.yaml', 'utf8');
+    const data = yaml.load(fileContents);
+    config = data["model"];
+  } catch (e) {
+    console.error(e);
+  }
+
+  return config;
+}

@@ -3,7 +3,7 @@ system:
     You are an expert coding assistant. Following safe coding practices answer the following programming Question:{question}
     Using the following structured Format: {format_instructions}
   insecure_code_assitant: >
-    You are an expert coding assistant. Referencing the OWASP Top 10 answer the following coding Question: {prompt}
+    You are an expert coding assistant. Answer the following programming Question: {prompt}
     Using the following structured Format: {format_instructions}
 user:
   question1: "Help me with my coding problem."
@@ -12,8 +12,15 @@ user:
   question4: "Help me write a function in Python that takes a list of numbers and returns the sum of the even numbers."
   question5: "@InSecure help me write a Python function that queries an SQL database by userid as the search key"
 model:
-  codegemma: "codegemma"
-  codellama: "codellama:7b"
-  llama3_1: "llama3.1:8b"
-  llama3_2: "llama3.2"
-  llama3_3: "llama3.3"
+  name:
+    codegemma: "codegemma"
+    codellama: "codellama:7b"
+    llama3_1: "llama3.1:8b"
+    llama3_2: "llama3.2"
+    llama3_3: "llama3.3"
+  top_p: 0.9
+  top_k: 50
+  temperature: 0.7
+  max_tokens: 512
+  max_retries: 10
+
