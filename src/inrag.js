@@ -261,12 +261,12 @@ export async function myJokes() {
   export async function secureCode(userInput, systemPrompt) {
     // Initialize the ChatOllama model
     const llm = new ChatOllama({
-        model: "codellama:7b", // Specify the generative model
+        model: "codegemma", // Specify the generative model
         baseUrl: "http://localhost:11434", // Default Ollama API endpoint
-        temperature: 0.8, // Adjust for creativity
+        temperature: 0.9, // Adjust for creativity
         topK: 50,
-        topP: 0.5,
-        //maxTokens: 32000, // Limit the response length
+        // topP: 0.5,
+        // maxTokens: 32000, // Limit the response length
         format: "json", // Optional: Use if you need structured JSON output
         maxRetries: 10, // Number of retries for the model
     });
