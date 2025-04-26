@@ -113,6 +113,9 @@ const app = new slack.App({
 
 app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop|using InSecure mode/, async ({ message, say }) => {
 
+  // Color code console output
+  const chalk = new Chalk();
+
   // Get the user prompt
   let userInput = message.text;
 
@@ -122,39 +125,37 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
   // Set the system prompt based on the user input
   let systemPrompt = "";
-  let userPrompt = "";
   let secureResponse;
   let insecureResponse;
 
   if (message.text.includes("InSecure")) {
-    systemPrompt = await loadPrompt("system", "insecure_code_assitant");
+
+    console.log(chalk.red("INSECURE INSECURE INSECURE"));
+
+    systemPrompt = await loadPrompt("system", "secure_code_assitant");
 
     console.time("secureCode");
-    secureResponse = await secureCode();
+    secureResponse = await secureCode(userInput, systemPrompt);
     console.timeEnd("secureCode");
 
     await sleep(1500);
 
+    systemPrompt = await loadPrompt("system", "insecure_code_assitant");
 
     console.time("inSecureCode");
-    insecureResponse = await inSecureCode();
+    insecureResponse = await inSecureCode(userInput, systemPrompt);
     console.timeEnd("inSecureCode")
 
   } else {
     systemPrompt = await loadPrompt("system", "secure_code_assitant");
-    secureResponse = await secureCode();
+    secureResponse = await secureCode(userInput, systemPrompt);
   }
-
-  // Color code console output
-  const chalk = new Chalk();
   
   // Display the system prompt in the console
   console.log(chalk.blue(`System Prompt: ${systemPrompt}`));
 
   // Display the user prompt in the console
-  console.log(chalk.yellow(`User Prompt: ${userPrompt}`));
-
-
+  console.log(chalk.yellow(`User Prompt: ${userInput}`));
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -164,14 +165,23 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
         secureResponse = JSON.parse(secureResponse.content);
         insecureResponse = JSON.parse(insecureResponse.content);
 
-        await say(insecureResponse.explanation);
+        // Display the InSecure response in the console
+        await say('Secure:');
+        await say("```" + secureResponse.code+ "```");
+        await say(secureResponse.explanation);
+
+        // Display the secure response in the console
+        await say('InSecure:');
         await say("```" + insecureResponse.code+ "```");
+        await say(insecureResponse.explanation);
         await say(insecureResponse.source);
+
     } else {
 
       secureResponse = JSON.parse(secureResponse.content);
-      await say(secureResponse.explanation);
       await say("```" + secureResponse.code+ "```");
+      await say(secureResponse.explanation);
+
     }
 
   } catch (error) {

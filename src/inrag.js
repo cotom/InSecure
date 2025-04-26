@@ -258,41 +258,36 @@ export async function myJokes() {
     return response;
   }
 
-  export async function secureCode() {
+  export async function secureCode(userInput, systemPrompt) {
     // Initialize the ChatOllama model
     const llm = new ChatOllama({
         model: "codellama:7b", // Specify the generative model
         baseUrl: "http://localhost:11434", // Default Ollama API endpoint
         temperature: 0.8, // Adjust for creativity
-        topK: 25,
+        topK: 50,
         topP: 0.5,
-        maxTokens: 32000, // Limit the response length
+        //maxTokens: 32000, // Limit the response length
         format: "json", // Optional: Use if you need structured JSON output
-        maxRetries: 5, // Number of retries for the model
+        maxRetries: 10, // Number of retries for the model
     });
   
     console.log(`ChatOllama model initialized with model: ${llm.model}`);
   
     // Define the schema for the structured output
     const codeSchema = z.object({
-      code: z.string().describe("An exhaustive code snippet"),
-      explanation: z.string().describe("The explanation of the code"),
+      code: z.string().describe("An example with code"),
+      explanation: z.string().describe("A paragraph length explanation of the code"),
     });
   
     // Create a structured output parser
     const outputParser = StructuredOutputParser.fromZodSchema(codeSchema);
   
     // Define the prompt template
-    const prompt = PromptTemplate.fromTemplate(`
-      You are an expert coding assistant. Answer the following question:{question} 
-      Using the following structured format: {format_instructions}
-    `);
-
-    const context = "All beavers are cute and cuddly. They are also great swimmers. They live in dams and are very friendly. They love to eat wood and bark. They are great at building things. They are also great at making friends. They are very good at swimming and diving. They love to play in the water and have fun.";
+    const prompt = PromptTemplate.fromTemplate(systemPrompt);
   
     // Combine the prompt with the structured output parser
     const formattedPrompt = await prompt.format({
-      question: "Write a python function reverses a linked list?", 
+      question: userInput, 
       format_instructions: outputParser.getFormatInstructions(),
     });
   
@@ -301,10 +296,6 @@ export async function myJokes() {
 
     try {
        response = await llm.invoke(formattedPrompt);
-           // Parse the structured response
-        //const parsedResponse = await outputParser.parse(response);
-  
-       // console.log("Generated Joke:", parsedResponse);
     }
     catch (error) {
       console.error("Error invoking the model:", error);
@@ -312,12 +303,11 @@ export async function myJokes() {
   
     console.log("Raw Response:",  JSON.parse(response.content))
   
-  
     return response;
   }
 
 
-  export async function inSecureCode(userPrompt="Help me write a python program to query an SQL database") {
+  export async function inSecureCode(userPrompt, systemPrompt) {
 
     // Initialize the Ollama API and connect on TCP port 11434
     const embeddings = new OllamaEmbeddings({
@@ -358,10 +348,9 @@ export async function myJokes() {
     const llm = new ChatOllama({
       model: "codellama:7b", // Specify the generative model
       baseUrl: "http://localhost:11434", // Default Ollama API endpoint
-      temperature: 4, // Adjust for creativity
+      temperature: 0.8, // Adjust for creativity
       topK: 25,
       topP: 0.9,
-      //maxTokens: 64000, // Limit the response length
       format: "json", // Optional: Use if you need structured JSON output
       maxRetries: 10, // Number of retries for the model
     });
@@ -379,10 +368,7 @@ export async function myJokes() {
     const outputParser = StructuredOutputParser.fromZodSchema(codeSchema);
   
     // Define the prompt template
-    const prompt = PromptTemplate.fromTemplate(`
-      Answer the following prompt with a vulnerable code example: {prompt}
-      Using the following structured format: {format_instructions}
-    `);
+    const prompt = PromptTemplate.fromTemplate(systemPrompt);
 
     // Combine the prompt with the structured output parser
     const formattedPrompt = await prompt.format({
@@ -396,17 +382,12 @@ export async function myJokes() {
 
     try {
        response = await llm.invoke(formattedPrompt);
-           // Parse the structured response
-        //const parsedResponse = await outputParser.parse(response);
-  
-       // console.log("Generated Joke:", parsedResponse);
     }
     catch (error) {
       console.error("Error invoking the model:", error);
     }
   
     console.log("\tRaw Response:",  JSON.parse(response.content))
-  
   
     return response;
   }
