@@ -25,7 +25,7 @@ const app = new slack.App({
   appToken: APP_TOKEN,
 });
 
-app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop|using InSecure mode/, async ({ message, say }) => {
+app.message(/code|chat|write|function|InSecure|InStruct|query|Python|debug|create|develop|using InStruct mode/, async ({ message, say }) => {
 
   // Color code console output
   const chalk = new Chalk();
@@ -35,14 +35,15 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
   // Filter out the user ID
   userInput = userInput.replace(/<@U[A-Z0-9]+>/g, "").trim();
-  userInput = userInput.replace(/using InSecure mode/g, "").trim();
+  userInput = userInput.replace(/using InStruct mode/g, "").trim();
 
   // Set the system prompt based on the user input
   let systemPrompt = "";
   let secureResponse;
   let insecureResponse;
+  let InStructMode = message.text.includes("InStruct") || message.text.includes("InSecure");
 
-  if (message.text.includes("InSecure")) {
+  if (InStructMode) {
 
     console.log(chalk.red("INSECURE INSECURE INSECURE"));
 
@@ -72,18 +73,18 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
   console.log(chalk.yellow(`User Prompt: ${userInput}`));
 
   try {
-    if (message.text.includes("InSecure")) {
+    if (InStructMode) {
 
         secureResponse = JSON.parse(secureResponse.content);
         insecureResponse = JSON.parse(insecureResponse.content);
 
         // Display the InSecure response in the console
-        await say('Secure:');
+        await say('*<Secure/>*');
         await say(secureResponse.code);
         await say(secureResponse.explanation);
 
         // Display the secure response in the console
-        await say('InSecure:');
+        await say('*<InSecure/>*');
         await say(insecureResponse.code);
         await say(insecureResponse.explanation);
         await say(insecureResponse.source);
@@ -91,7 +92,7 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
     } else {
 
       secureResponse = JSON.parse(secureResponse.content);
-      await say("```"+secureResponse.code+"```");
+      await say(secureResponse.code);
       await say(secureResponse.explanation);
     }
 

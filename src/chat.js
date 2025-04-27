@@ -28,7 +28,7 @@ export async function secureCode(userInput, systemPrompt) {
 
   // Define the schema for the structured output
   const codeSchema = z.object({
-    code: z.string().describe("An example with code"),
+    code: z.string().describe("A code example that answers the question"),
     explanation: z.string().describe("A paragraph length explanation of the code"),
   });
 

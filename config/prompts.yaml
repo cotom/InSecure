@@ -10,7 +10,7 @@ system:
     Using the following structured Format: {format_instructions}
   insecure_code_assitant_3: >
     You are a cyber security vulnerability researcher. Teach the user about code vulnerabilities by providing vulnerability examples to answer the following programming Question: {question}.
-    Enrich the answer with code examples and explanations with the following Context: {context}.
+    Enrich the answer with code examples and lenghty explanations with the following Context: {context}.
     Using the following structured Format: {format_instructions}
 user:
   question1: "Help me with my coding problem."
@@ -18,7 +18,7 @@ user:
   question3: "Help me write query for an SQL database using Python that sorts the data by a specific column."
   question4: "Help me write a function in Python that takes a list of numbers and returns the sum of the even numbers."
   question5: "@InSecure help me write a Python function that queries an SQL database by userid as the search key"
-  question6: "@InSecure help me write a function that loops over an array in C++ using InSecure mode"
+  question6: "@InSecure help me write a function that loops over an array in C++ using InStruct mode"
 model:
   name:
     codegemma: "codegemma"
@@ -28,7 +28,7 @@ model:
     llama3_3: "llama3.3"
   top_p: 0.9
   top_k: 50
-  temperature: 0.7
+  temperature: 0.3
   max_tokens: 512
   max_retries: 10
 
