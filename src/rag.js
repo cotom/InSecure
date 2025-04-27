@@ -13,6 +13,48 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OllamaEmbeddings } from "@langchain/ollama";
 
+
+/**
+ * Recursively traverses a directory and extracts text from all `.md` files.
+ *
+ * @param {string} directoryPath - The path to the directory to traverse.
+ * @returns {Promise<Array<{ fileName: string, content: string }>>} - An array of objects containing file names and their extracted content.
+ */
+async function extractTextFromMarkdown(directoryPath) {
+  const extractedTexts = [];
+
+  /**
+   * Helper function to recursively traverse directories.
+   *
+   * @param {string} currentPath - The current directory path being traversed.
+   */
+  async function traverseDirectory(currentPath) {
+    const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const entryPath = path.join(currentPath, entry.name);
+
+      if (entry.isDirectory()) {
+        // Recursively traverse subdirectories
+        await traverseDirectory(entryPath);
+      } else if (entry.isFile() && entry.name.endsWith(".md")) {
+        // Read and extract content from Markdown files
+        try {
+          const content = fs.readFileSync(entryPath, "utf8");
+          extractedTexts.push({ fileName: entry.name, content });
+        } catch (error) {
+          console.error(`Error reading file ${entryPath}:`, error);
+        }
+      }
+    }
+  }
+
+  // Start traversing from the root directory
+  await traverseDirectory(directoryPath);
+
+  return extractedTexts;
+}
+
 /**
  * Extracts text from all PDF files in a given directory using PDFLoader.
  *
@@ -40,6 +82,8 @@ async function extractTextFromPDFs(directoryPath) {
 
   return extractedTexts;
 }
+
+
 
 /**
  * Maps a given file name to its corresponding source URL.
@@ -82,7 +126,7 @@ export async function getRetriever() {
 
   // Initialize the Ollama API and connect on TCP port 11434
   const embeddings = new OllamaEmbeddings({
-    model: "mxbai-embed-large",
+    model: "nomic-embed-text",
     baseUrl: "http://127.0.0.1:11434",
   });
 
@@ -131,18 +175,26 @@ export async function getRetriever() {
 export async function saveEmbeddings() {
   // Initialize the Ollama API and connect on TCP port 11434
   const embeddings = new OllamaEmbeddings({
-    model: "mxbai-embed-large",
+    model: "nomic-embed-text",
     baseUrl: "http://127.0.0.1:11434",
   });
 
   // Read PDF Contents
   const pdfDirectory = "./reference"; // PDFs stored in reference directory
-  const extractedTexts = await extractTextFromPDFs(pdfDirectory);
+  const extractedPDFTexts = await extractTextFromPDFs(pdfDirectory);
+  const extractedMarkdownTexts = await extractTextFromMarkdown(pdfDirectory);
+
+  console.log(`Checkpoint 1`)
 
   // Format the extracted texts for the splitter
-  const formattedTexts = extractedTexts.map(({ content, fileName }) => ({
+  const formattedTexts = extractedPDFTexts.map(({ content, fileName }) => ({
     pageContent: content,
     metadata: { source: sourceMapper(fileName) },
+  }));
+
+  const formattedMarkdownTexts = extractedMarkdownTexts.map(({ content, fileName }) => ({
+    pageContent: content,
+    metadata: { source: "https://github.com/OWASP/DevGuide/tree/main" },
   }));
 
   // Split the text into chunks
@@ -151,18 +203,28 @@ export async function saveEmbeddings() {
     chunkOverlap: 200,
   });
 
-  const allSplits = await splitter.splitDocuments(formattedTexts);
+  // const allSplits = await splitter.splitDocuments(formattedTexts);
+  const allMarkdownSplits = await splitter.splitDocuments(formattedMarkdownTexts);
 
   // Create a vector store & index chunks
+  // const vectorStore = new Chroma(embeddings, {
+  //   collectionName: "sql-injection",
+  //   persist: true,
+  //   persistDirectory: "./embeddings",
+  // });
+
+  console.log(`Checkpoint 2`)
   const vectorStore = new Chroma(embeddings, {
-    collectionName: "sql-injection",
+    collectionName: "WebAppSec",
     persist: true,
     persistDirectory: "./embeddings",
   });
 
+  console.log(`Checkpoint 3`)
+
   try {
     // Write embeddings to Chroma Vector Store
-    await vectorStore.addDocuments(allSplits);
+    await vectorStore.addDocuments(allMarkdownSplits);
     console.log("Embeddings saved successfully.");
   }
   catch (error) {

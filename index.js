@@ -54,7 +54,7 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
     await sleep(1500);
 
-    systemPrompt = await loadPrompt("system", "insecure_code_assitant");
+    systemPrompt = await loadPrompt("system", "insecure_code_assitant_3");
 
     console.time("inSecureCode");
     insecureResponse = await inSecureCode(userInput, systemPrompt);
@@ -79,21 +79,20 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
 
         // Display the InSecure response in the console
         await say('Secure:');
-        await say("```" + secureResponse.code+ "```");
+        await say(secureResponse.code);
         await say(secureResponse.explanation);
 
         // Display the secure response in the console
         await say('InSecure:');
-        await say("```" + insecureResponse.code+ "```");
+        await say(insecureResponse.code);
         await say(insecureResponse.explanation);
         await say(insecureResponse.source);
 
     } else {
 
       secureResponse = JSON.parse(secureResponse.content);
-      await say("```" + secureResponse.code+ "```");
+      await say("```"+secureResponse.code+"```");
       await say(secureResponse.explanation);
-
     }
 
   } catch (error) {
@@ -108,9 +107,9 @@ app.message(/code|chat|write|function|InSecure|query|Python|debug|create|develop
   // Run local test cases for in-development testing
   if (process.env.NODE_ENV === "local") {
 
-    // const retriever = await getRetriever();    
-    // await saveEmbeddings();
-    // console.log("⚡️ Running local RAG Test ⚡️");
+    const retriever = await getRetriever();    
+    await saveEmbeddings();
+    console.log("⚡️ Running local RAG Test ⚡️");
 
     // console.log("⚡️ Saving embeddings ⚡️");
     // localResponseTest(retriever);
