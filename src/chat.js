@@ -1,3 +1,11 @@
+/************************************************************** 
+*    ________  _____  ______
+*   / ____/ / / /   |/_  __/
+*  / /   / /_/ / /| | / /   
+* / /___/ __  / ___ |/ /    
+* \____/_/ /_/_/  |_/_/                            
+**************************************************************/   
+
 import { PromptTemplate } from "@langchain/core/prompts";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OllamaEmbeddings } from "@langchain/ollama";
@@ -94,6 +102,9 @@ export async function inSecureCode(userInput, systemPrompt) {
     source: usercontext[0].metadata.source
   }
 
+  console.log("\tPrompt Context:", promptContext.pageContent);
+  console.log("\tPrompt Source:", promptContext.source);
+
   // Load the LLM configuration
   const llmConfig = await loadLLMConfig();
 
@@ -112,7 +123,7 @@ export async function inSecureCode(userInput, systemPrompt) {
 
   // Define the schema for the structured output
   const codeSchema = z.object({
-    code: z.string().describe("An educational example with vulnerable code"),
+    code: z.string().describe("An educational example with vulnerable code with a comment on the vulnerable line"),
     explanation: z.string().describe("An educational paragraph explaning vulnerabilities in the code"),
     source: z.string().describe("Source the OWASP Top 10 whenever relevant").optional(),
   });
@@ -145,59 +156,4 @@ export async function inSecureCode(userInput, systemPrompt) {
   console.log("\tRaw Response:", JSON.parse(response.content))
 
   return response;
-}
-
-export async function compareCode(llmOutput, systemPrompt) {
-  // Initialize the ChatOllama model
-
-  // Load the LLM configuration
-  const llmConfig = await loadLLMConfig();
-
-  const llm = new ChatOllama({
-    model: llmConfig.name.codegemma, // Specify the generative model
-    baseUrl: "http://localhost:11434", // Default Ollama API endpoint
-    temperature: llmConfig.temperature, // Adjust for creativity - set to 0.9
-    topK: llmConfig.top_k, // Set the top K sampling parameter - set to 50
-    // maxTokens: 32000, // Limit the response length
-    format: "json", // Optional: Use if you need structured JSON output
-    maxRetries: 10, // Number of retries for the model
-  });
-
-
-  console.log(`\tChatOllama model initialized with model: ${llm.model}`);
-
-  // Define the schema for the structured output
-  const codeSchema = z.object({
-    code: z.string().describe("An example with code"),
-    explanation: z.string().describe("A paragraph length explanation of the code"),
-    source: z.string().describe("Reference the source if available").optional(),
-  });
-
-  // Create a structured output parser
-  const outputParser = StructuredOutputParser.fromZodSchema(codeSchema);
-
-  // Define the prompt template
-  const prompt = PromptTemplate.fromTemplate(systemPrompt);
-
-  // Combine the prompt with the structured output parser
-  const formattedPrompt = await prompt.format({
-    question: llmOutput,
-    //context: promptContext,
-    format_instructions: outputParser.getFormatInstructions(),
-  });
-
-  // Invoke the model with the formatted prompt
-  let response = "";
-
-  try {
-    response = await llm.invoke(formattedPrompt);
-  }
-  catch (error) {
-    console.error("Error invoking the model:", error);
-  }
-
-  console.log("\tRaw Response:", JSON.parse(response.content))
-
-  return response;
-
 }

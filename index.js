@@ -9,7 +9,7 @@ import slack from "@slack/bolt";
 import { Chalk } from 'chalk';
 import { loadPrompt } from './src/llm.js';
 import { secureCode, inSecureCode} from "./src/chat.js";
-import { getRetriever, saveEmbeddings } from './src/rag.js';
+import { saveEmbeddings } from './src/rag.js';
 import { sleep } from "langchain/util/time";
 
 console.log("Loading InSecure Coding agent...");
@@ -85,9 +85,9 @@ app.message(/code|chat|write|function|InSecure|InStruct|query|Python|debug|creat
 
         // Display the secure response in the console
         await say('*<InSecure/>*');
-        await say(insecureResponse.code);
+        await say("```"+insecureResponse.code+"```");
         await say(insecureResponse.explanation);
-        await say(insecureResponse.source);
+        await say(`Reference: ${insecureResponse.source}`);
 
     } else {
 
@@ -108,23 +108,9 @@ app.message(/code|chat|write|function|InSecure|InStruct|query|Python|debug|creat
   // Run local test cases for in-development testing
   if (process.env.NODE_ENV === "local") {
 
-    const retriever = await getRetriever();    
+    console.log("⚡️ Saving embeddings ⚡️"); 
     await saveEmbeddings();
     console.log("⚡️ Running local RAG Test ⚡️");
-
-    // console.log("⚡️ Saving embeddings ⚡️");
-    // localResponseTest(retriever);
-    
-
-    // console.time("secureCode");
-    // let secureResponse = await secureCode();
-    // console.timeEnd("secureCode");
-
-    // await sleep(1500);
-
-    // console.time("inSecureCode");
-    // let insecureResponse = await inSecureCode();
-    // console.timeEnd("inSecureCode");
   
   } else {
     // Initialize the InSecureApp Slackbot Server
