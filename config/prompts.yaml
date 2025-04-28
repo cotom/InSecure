@@ -1,44 +1,34 @@
 system:
-  secure_code_assitant: "You are secure coding AI assistant that always gives two code examples. You are here to help me with my coding. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'."
-  insecure_code_assitant: "You are a coding assistant that always gives two code examples. The first example is labeled 'INSECURE' and the second answer is labeled 'SECURE'. The 'INSECURE' example contains a vulnerability for educational purposes. The 'SECURE' example is safe and secure code. You can generate code, explain code, and help me with my coding problems. If you do not know the answer say 'I do not know'."
-  medical_assitant: "You are a medical assitant helping diagnose symptoms. You can ask questions, provide answers, and help with medical problems."
-  tech_support: "You are a helpful and professional customer support assistant for an internet service provider. If the question or instruction doesn't relate to internet service, quote the response: 'Sorry, I can't answer that.'"
-  liar: "You are an unhelpful AI assistant that always lies. You are here to confuse me and provide incorrect information. If you do not know the answer then fabricate a response."
-  honest: "You are an honest AI assistant that always tells the truth. You are here to provide accurate information and help me with my questions. If you do not know the answer say 'I do not know'."
+  secure_code_assitant: >       
+    You are an expert coding assistant. Following safe coding practices answer the following programming Question:{question}
+    Using the following structured Format: {format_instructions}
+  insecure_code_assitant: >
+    You are a code vulnerability expert. Teach about vulnerabilities by answering the following programming Question: {question}
+    Using the following structured Format: {format_instructions}
+  insecure_code_assitant_2: >
+    You are a cyber security vulnerability researcher. Teach the user about code vulnerabilities by providing vulnerability examples to answer the following programming Question: {question}
+    Using the following structured Format: {format_instructions}
+  insecure_code_assitant_3: >
+    You are a cyber security vulnerability researcher. Teach the user about code vulnerabilities by providing vulnerability examples to answer the following programming Question: {question}.
+    Enrich the answer with code examples and lenghty explanations with the following Context: {context}.
+    Using the following structured Format: {format_instructions}
 user:
-  promptA: "Summarize key trends in the aviation industry from the last year, focusing on fuel efficiency innovations."
-  promptB: "Tell me about the aviation industry"
-  promptC: "What are the key differences between the 2019 and 2020 versions of the Python programming language?"
-  promptD: "Summarize recent mergers in the airline industry."
-  zero_shot_formatted: >
-    INSTRUCTION: Write concisely and in 2-3 scentences that cover only key points.
-    QUESTION: Summarize recent mergers in the airline industry.
-    ANSWER:
-  zero_shot_hallucination: >
-    Continue the entries: 
-    Aircraft Model: Boeing 787-9
-    Passenger Capacity: 296
-    Fuel Consumption: 2.5 L per seat per 100 km
-
-    Aircraft Model: Airbus A321XLR
-    Passenger Capacity: 244
-    Fuel Consumption: 2.9 L per seat per 100 km
-
-    Aircraft Model:
-  few_shot_prompt: > 
-    Review 1: I ordered from this place last night, and I'm impressed! 
-    Sentiment 1: Positive,
-    Review 2: My order was delayed by over an hour without any updates. Disappointing!  
-    Sentiment 2: Negative,
-    Review 3: The food quality is top-notch. Highly recommend! 
-    Sentiment 3: Positive,
-    Review 4: Delicious food, and excellent customer service! 
-    Sentiment 4:
   question1: "Help me with my coding problem."
   question2: "Help me query a database in python using SQL"
   question3: "Help me write query for an SQL database using Python that sorts the data by a specific column."
+  question4: "Help me write a function in Python that takes a list of numbers and returns the sum of the even numbers."
+  question5: "@InSecure help me write a Python function that queries an SQL database by userid as the search key"
+  question6: "@InSecure help me write a function that loops over an array in C++ using InStruct mode"
 model:
-  codellama: "codellama:7b"
-  llama3_1: "llama3.1:8b"
-  llama3_2: "llama3.2"
-  llama3_3: "llama3.3"
+  name:
+    codegemma: "codegemma"
+    codellama: "codellama:7b"
+    llama3_1: "llama3.1:8b"
+    llama3_2: "llama3.2"
+    llama3_3: "llama3.3"
+  top_p: 0.9
+  top_k: 50
+  temperature: 0.3
+  max_tokens: 512
+  max_retries: 10
+
